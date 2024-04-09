@@ -1,7 +1,18 @@
+using MagicVilla_VillaAPI.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-//
+// SQL
+const string DefaultSQSLConnection = "DefaultSQLConnection";
+string conStr = builder.Configuration.GetConnectionString(DefaultSQSLConnection) 
+    ?? throw new Exception("Default SQL Connection String is not defined");
+
+builder.Services.AddDbContext<ApplicationDbContext>(option =>
+{
+    option.UseSqlServer(conStr);
+});
 
 // Controllers
 builder.Services
