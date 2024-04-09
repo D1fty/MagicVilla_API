@@ -1,14 +1,7 @@
-//using Serilog;
-
-using MagicVilla_VillaAPI.Logging;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddSingleton<iLogging, Logging>();    
-// AddSingleton -> Single object whole program
-// AddScope     -> One object per scoped request
-// AddTransient -> One object per request
+//
 
 // Controllers
 builder.Services
