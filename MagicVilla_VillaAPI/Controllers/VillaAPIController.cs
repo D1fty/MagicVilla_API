@@ -1,7 +1,9 @@
 ﻿using MagicVilla_VillaAPI.Data;
+using MagicVilla_VillaAPI.Models;
 using MagicVilla_VillaAPI.Models.DTO;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace MagicVilla_VillaAPI.Controllers
 {
@@ -9,16 +11,18 @@ namespace MagicVilla_VillaAPI.Controllers
     [ApiController]
     public class VillaAPIController : ControllerBase
     {
-        public VillaAPIController()
+        private readonly ApplicationDbContext _db;
+        public VillaAPIController(ApplicationDbContext db)
         {
-
+            _db = db;
         }
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<VillaDTO>> GetVillas()
         {
-            return Ok(VillaStore.VillaList);
+            var villas = _db.Villas.ToList();
+            return Ok(villas);
         }
 
         [HttpGet("{id:int}", Name ="GetVilla")]
@@ -32,9 +36,7 @@ namespace MagicVilla_VillaAPI.Controllers
                 return BadRequest();
             }
 
-            var villa = VillaStore.VillaList
-                .FirstOrDefault(villa => villa.Id == id);
-
+            var villa = _db.Villas.FirstOrDefault(villa => villa.Id == id);
             return (villa == null)
                 ? NotFound()
                 : Ok(villa);
@@ -50,8 +52,8 @@ namespace MagicVilla_VillaAPI.Controllers
             if (null != validation)
                 return validation;
 
-            villaDTO.Id = VillaStore.ClaimId();
-            VillaStore.VillaList.Add(villaDTO);
+            _db.Villas.Add(villaDTO);
+            _db.SaveChanges();
 
             return CreatedAtRoute("GetVilla", new { villaDTO.Id }, villaDTO);
         }
@@ -68,7 +70,7 @@ namespace MagicVilla_VillaAPI.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            else if (VillaStore.VillaList.Any(v => v.Name == villaDTO.Name))
+            else if (_db.Villas.Any(v => v.Name == villaDTO.Name))
             {
                 ModelState.AddModelError("VillaPreexistingError", "Villa already exists!");
                 return BadRequest(ModelState);
@@ -86,11 +88,12 @@ namespace MagicVilla_VillaAPI.Controllers
             if (id == 0)
                 return BadRequest();
             
-            var villa = VillaStore.VillaList.FirstOrDefault(v => v.Id == id);
+            var villa = _db.Villas.FirstOrDefault(v => v.Id == id);
             if (villa == null)
                 return NotFound();
 
-            VillaStore.VillaList.Remove(villa);
+            _db.Villas.Remove(villa);
+            _db.SaveChanges();
 
             return NoContent();
         }
@@ -101,13 +104,8 @@ namespace MagicVilla_VillaAPI.Controllers
             if (villaDTO == null || id != villaDTO.Id)
                 return BadRequest(ModelState);
 
-            var villa = VillaStore.VillaList.FirstOrDefault(v => v.Id == id);
-            if (villa == null)
-                return NotFound();
-
-            villa.Name = villaDTO.Name;
-            villa.SqFt = villaDTO.SqFt;
-            villa.Occupancy = villaDTO.Occupancy;
+            _db.Villas.Update(villaDTO);
+            _db.SaveChanges();
 
             return NoContent();
         }
@@ -120,11 +118,19 @@ namespace MagicVilla_VillaAPI.Controllers
             if (patchDTO == null || id == 0)
                 return BadRequest();
 
-            var villa = VillaStore.VillaList.FirstOrDefault(v => v.Id == id);
+            var villa = _db.Villas
+                .AsNoTracking()
+                .FirstOrDefault(v => v.Id == id);
+
             if (villa == null)
                 return BadRequest();
 
-            patchDTO.ApplyTo(villa, ModelState);
+            VillaDTO villaDTO = (VillaDTO)villa;
+            patchDTO.ApplyTo(villaDTO, ModelState);
+
+            Villa villaToUpdate = (Villa)villaDTO;
+            _db.Update(villaToUpdate);
+            _db.SaveChanges();
 
             if (!ModelState.IsValid) 
                 return BadRequest(ModelState);
