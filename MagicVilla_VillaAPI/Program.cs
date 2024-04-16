@@ -1,3 +1,4 @@
+using MagicVilla_VillaAPI;
 using MagicVilla_VillaAPI.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
 {
     option.UseSqlServer(conStr);
 });
+
+// Automapper
+builder.Services.AddAutoMapper(typeof(MappingConfig));
 
 // Controllers
 builder.Services
