@@ -2,9 +2,16 @@
 
 namespace MagicVilla_VillaAPI.Models.DTO
 {
+
+    [MetadataType(typeof(VillaUpdateDTOMetdaData))]
     public class VillaUpdateDTO : VillaDTO
     {
+        // None yet
+    }
+
+    class VillaUpdateDTOMetdaData
+    {
         [Required]
-        public override int Id { get; set; }
+        public int Id { get; set; }
     }
 }
