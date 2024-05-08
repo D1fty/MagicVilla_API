@@ -4,9 +4,9 @@ using MagicVilla_VillaAPI.Repository.IRepository;
 
 namespace MagicVilla_VillaAPI.Repository
 {
-    public class VillaRepository : Repository<Villa>, IVillaRepository
+    public class VillaNumberRepository : Repository<VillaNumber>, IVillaNumberRepository
     {
-        public VillaRepository(ApplicationDbContext db) : base(db)
+        public VillaNumberRepository(ApplicationDbContext db) : base(db)
         {
         }
     }

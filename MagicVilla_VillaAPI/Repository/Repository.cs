@@ -62,9 +62,14 @@ namespace MagicVilla_VillaAPI.Repository
             return query;
         }
 
-        public Task UpdateAsync(T entity)
+        public async Task UpdateAsync(T entity)
         {
-            throw new NotImplementedException();
+            var prop = typeof(T).GetProperty("UpdatedDate");
+            if (prop != null)
+                prop.SetValue(entity, DateTime.Now, null);
+
+            _dbSet.Update(entity);
+            await SaveAsync();
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace MagicVilla_VillaAPI.Repository.IRepository
 {
-    public interface IVillaRepository : IRepository<Villa>
+    public interface IVillaNumberRepository : IRepository<VillaNumber>
     {
         // Nada
     }

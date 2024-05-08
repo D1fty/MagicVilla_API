@@ -15,7 +15,6 @@ namespace MagicVilla_VillaAPI.Repository.IRepository
 
         Task<T> GetAsync(Expression<Func<T, bool>> filter, bool tracked = true);
 
-        // Abstracts
-        abstract Task UpdateAsync(T entity);
+        Task UpdateAsync(T entity);
     }
 }
