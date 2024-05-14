@@ -71,5 +71,11 @@ namespace MagicVilla_VillaAPI.Repository
             _dbSet.Update(entity);
             await SaveAsync();
         }
+
+        public async Task<bool> AnyAsync(Expression<Func<T, bool>> expression)
+            => await _dbSet.AnyAsync(expression);
+        
+        public async Task<bool> NoneAsync(Expression<Func<T, bool>> expression) 
+            => !await _dbSet.AnyAsync(expression);
     }
 }

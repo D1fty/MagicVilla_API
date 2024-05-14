@@ -2,6 +2,7 @@
 using MagicVilla_VillaAPI.Models;
 using MagicVilla_VillaAPI.Models.DTO;
 using MagicVilla_VillaAPI.Repository.IRepository;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -14,12 +15,14 @@ namespace MagicVilla_VillaAPI.Controllers
     {
         protected APIResponse _response;
         private readonly IVillaNumberRepository _dbVillaNumbers;
+        private readonly IVillaRepository _dbVillas;
         private readonly IMapper _mapper;
-        public VillaNumberAPIController(IVillaNumberRepository dbVilla, IMapper mapper)
+        public VillaNumberAPIController(IVillaRepository dbVillas, IVillaNumberRepository dbVillaNumbers, IMapper mapper)
         {
-            _dbVillaNumbers   = dbVilla;
-            _mapper     = mapper;
-            _response   = new();
+            _dbVillaNumbers = dbVillaNumbers;
+            _dbVillas = dbVillas;
+            _mapper = mapper;
+            _response = new();
         }
 
         [HttpGet]
@@ -80,6 +83,11 @@ namespace MagicVilla_VillaAPI.Controllers
                     _response.ErrorMessages.Add("VillaNumber already exists!");
                     return mvBadRequest;
                 }
+                else if (await _dbVillas.NoneAsync(x => x.Id == createDTO.VillaID))
+                {
+                    _response.ErrorMessages.Add($"Villa with VillaID {createDTO.VillaID} does not exist");
+                    return mvBadRequest;
+                }
 
                 var villa = _mapper.Map<VillaNumber>(createDTO);
                 await _dbVillaNumbers.CreateAsync(villa);
@@ -126,7 +134,14 @@ namespace MagicVilla_VillaAPI.Controllers
             try
             {
                 if (updateDTO == null || number != updateDTO.VillaNo)
+                {
                     return BadRequest(ModelState);
+                }
+                else if (await _dbVillas.NoneAsync(x => x.Id == updateDTO.VillaID))
+                {
+                    _response.ErrorMessages.Add($"Villa with VillaID {updateDTO.VillaID} does not exist");
+                    return mvBadRequest;
+                }
 
                 var model = _mapper.Map<VillaNumber>(updateDTO);
                 await _dbVillaNumbers.UpdateAsync(model);
